@@ -20,7 +20,7 @@ func newToolboxApp() *cli.App {
 		Usage:   "toolbox is a command line tool that provides a set of tools for developers.",
 		Version: Version,
 	}
-	var commands []*cli.Command
+	var commands []cli.Command
 	commands = append(commands, webCmd)
 	app.Commands = commands
 	return app
