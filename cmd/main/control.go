@@ -11,7 +11,10 @@ var (
 		Usage: "web tool",
 		Subcommands: []cli.Command{
 			{
-				Name: "serve",
+				Name:      "file_serve",
+				Usage:     "serve files from a directory",
+				ShortName: "fs",
+				Aliases:   []string{"fs", "file_serve"},
 				Flags: []cli.Flag{
 					&cli.IntFlag{
 						Name:  "port",
