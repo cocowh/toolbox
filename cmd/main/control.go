@@ -1,0 +1,36 @@
+package main
+
+import (
+	"github.com/cocowh/toolbox/core/server"
+	"github.com/urfave/cli"
+)
+
+var (
+	webCmd = &cli.Command{
+		Name:  "web",
+		Usage: "web tool",
+		Commands: []*cli.Command{
+			{
+				Name: "serve",
+				Flags: []cli.Flag{
+					&cli.IntFlag{
+						Name:    "port",
+						Aliases: []string{"p"},
+						Value:   8080,
+						Usage:   "listening port",
+					},
+					&cli.StringFlag{
+						Name:    "dir",
+						Aliases: []string{"d"},
+						Usage:   "directory to serve files from",
+					},
+				},
+				Action: func(c *cli.Context) error {
+					port := c.Int("port")
+					dir := c.String("dir")
+					return server.StartFileServer(port, dir)
+				},
+			},
+		},
+	}
+)
