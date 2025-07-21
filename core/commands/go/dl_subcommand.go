@@ -1,0 +1,140 @@
+package _go
+
+import (
+	"archive/tar"
+	"compress/gzip"
+	"fmt"
+	"github.com/urfave/cli"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+)
+
+func newInstallGoSubcommand() cli.Command {
+	return cli.Command{
+		Name:      "dl",
+		Usage:     "Download and install a specific GO version",
+		ShortName: "dl",
+		Aliases:   []string{"gd", "dl", "install"},
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "version, v",
+				Usage: "Go version to download(e.g., 1.22.0)",
+			},
+			cli.StringFlag{
+				Name:  "install-dir, d",
+				Usage: "Directory to install Go (default: $GOPATH)",
+			},
+		},
+		Action: func(c *cli.Context) error {
+			osType := runtime.GOOS
+			if osType == "windows" {
+				return cli.NewExitError("Windows is not supported", 1)
+			}
+			version := c.String("version")
+			if version == "" {
+				return cli.NewExitError("Please specify --version (e.g. --version 1.22.0)", 1)
+			}
+			installBase := c.String("install-dir")
+			if installBase == "" {
+				gopath := os.Getenv("GOPATH")
+				if gopath == "" {
+					gopath = filepath.Join(os.Getenv("HOME"), "go")
+				}
+				installBase = gopath
+			}
+			destDir := filepath.Join(installBase, "go"+version)
+			if _, err := os.Stat(destDir); err == nil {
+				fmt.Println("Go version", version, "already installed at", destDir)
+				return nil
+			}
+			arch := runtime.GOARCH
+			tarball := fmt.Sprintf("go%s.%s-%s.tar.gz", version, osType, arch)
+			url := fmt.Sprintf("https://go.dev/dl/%s", tarball)
+
+			fmt.Println("Downloading:", url)
+
+			resp, err := http.Get(url)
+			if err != nil {
+				return fmt.Errorf("failed to download Go tarball: %w", err)
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != 200 {
+				return fmt.Errorf("failed to download: %s", resp.Status)
+			}
+
+			tmpFile := filepath.Join(os.TempDir(), tarball)
+			out, err := os.Create(tmpFile)
+			if err != nil {
+				return fmt.Errorf("failed to create temp file: %w", err)
+			}
+			_, err = io.Copy(out, resp.Body)
+			out.Close()
+			if err != nil {
+				return fmt.Errorf("failed to save tarball: %w", err)
+			}
+
+			fmt.Println("Extracting to:", destDir)
+			err = extractTarGz(tmpFile, installBase, version)
+			if err != nil {
+				return fmt.Errorf("extraction failed: %w", err)
+			}
+
+			fmt.Println("Go", version, "downloaded and extracted to", destDir)
+			return nil
+		},
+	}
+}
+
+func extractTarGz(tarPath, installBase, version string) error {
+	f, err := os.Open(tarPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gzr, err := gzip.NewReader(f)
+	if err != nil {
+		return err
+	}
+	defer gzr.Close()
+
+	tr := tar.NewReader(gzr)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		relPath := strings.TrimPrefix(hdr.Name, "go/")
+		target := filepath.Join(installBase, "go"+version, relPath)
+
+		if hdr.FileInfo().IsDir() {
+			if err := os.MkdirAll(target, hdr.FileInfo().Mode()); err != nil {
+				return err
+			}
+			continue
+		}
+
+		if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
+			return err
+		}
+		outFile, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, hdr.FileInfo().Mode())
+		if err != nil {
+			return err
+		}
+		if _, err := io.Copy(outFile, tr); err != nil {
+			outFile.Close()
+			return err
+		}
+		outFile.Close()
+	}
+	return nil
+}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	commands2 "github.com/cocowh/toolbox/core/commands"
 	"github.com/urfave/cli"
 	"os"
 )
@@ -17,11 +18,9 @@ func main() {
 func newToolboxApp() *cli.App {
 	app := &cli.App{
 		Name:    "toolbox",
-		Usage:   "toolbox is a command line tool that provides a set of tools for developers.",
+		Usage:   "Toolbox is a command line tool that provides a set of tools for developers.",
 		Version: Version,
 	}
-	var commands []cli.Command
-	commands = append(commands, webCmd)
-	app.Commands = commands
+	app.Commands = commands2.GetAllCommands()
 	return app
 }
