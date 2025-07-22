@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	defaultInstallDir = "/usr/local/"
+	downloadUrlTemplate = "https://golang.google.cn/dl/%s"
+	defaultInstallDir   = "/usr/local/"
 )
 
 func newInstallGoSubcommand() cli.Command {
@@ -56,18 +57,16 @@ func newInstallGoSubcommand() cli.Command {
 			}
 			arch := runtime.GOARCH
 			tarball := fmt.Sprintf("go%s.%s-%s.tar.gz", version, osType, arch)
-			url := fmt.Sprintf("https://go.dev/dl/%s", tarball)
+			url := fmt.Sprintf(downloadUrlTemplate, tarball)
 
 			fmt.Println("Downloading:", url)
-
 			resp, err := http.Get(url)
 			if err != nil {
 				return fmt.Errorf("failed to download Go tarball: %w", err)
 			}
 			defer resp.Body.Close()
-
-			if resp.StatusCode != 200 {
-				return fmt.Errorf("failed to download: %s", resp.Status)
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("failed to download Go tarball: %s", resp.Status)
 			}
 
 			tmpFile := filepath.Join(os.TempDir(), tarball)
@@ -94,6 +93,11 @@ func newInstallGoSubcommand() cli.Command {
 }
 
 func extractTarGz(tarPath, installBase, version string) error {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Extracting tar.gz failed:", r)
+		}
+	}()
 	f, err := os.Open(tarPath)
 	if err != nil {
 		return err
