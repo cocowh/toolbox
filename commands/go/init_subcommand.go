@@ -5,18 +5,22 @@ import (
 	"fmt"
 	"github.com/urfave/cli"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strings"
 )
 
-const goENVInitText = `
+const (
+	defaultGoProxy        = "https://goproxy.cn,direct"
+	defaultGoPath         = "$HOME/go"
+	defaultGoRoot         = "/usr/local/go"
+	goENVInitTextTemplate = `
 # added by toolbox ` + "`toolbox go init-go-env`" + `
-export GOPROXY=https://goproxy.cn,direct
-export GOPATH=$HOME/go
-export GOROOT=/usr/local/go
+export GOPROXY=%s
+export GOPATH=%s
+export GOROOT=%s
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 `
+)
 
 func newInitGoEnvSubcommand() cli.Command {
 	return cli.Command{
@@ -35,11 +39,11 @@ func newInitGoEnvSubcommand() cli.Command {
 			default:
 				return cli.NewExitError("unsupported shell: "+shell, 1)
 			}
-			usr, err := user.Current()
+			home, err := os.UserHomeDir()
 			if err != nil {
 				return cli.NewExitError("failed to get current user: "+err.Error(), 1)
 			}
-			fullPath := filepath.Join(usr.HomeDir, profileFile)
+			fullPath := filepath.Join(home, profileFile)
 			if alreadyContainsInit(fullPath) {
 				fmt.Println("go environment already initialized in", fullPath)
 				return nil
@@ -49,7 +53,7 @@ func newInitGoEnvSubcommand() cli.Command {
 				return cli.NewExitError("failed to open file: "+err.Error(), 1)
 			}
 			defer f.Close()
-			if _, err := f.WriteString(goENVInitText); err != nil {
+			if _, err := f.WriteString(fmt.Sprintf(goENVInitTextTemplate, defaultGoProxy, defaultGoPath, defaultGoRoot)); err != nil {
 				return cli.NewExitError("failed to write to profile: "+err.Error(), 1)
 			}
 			fmt.Println("✅ Go environment initialized in", fullPath)

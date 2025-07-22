@@ -13,12 +13,16 @@ import (
 	"strings"
 )
 
+const (
+	defaultInstallDir = "/usr/local/"
+)
+
 func newInstallGoSubcommand() cli.Command {
 	return cli.Command{
-		Name:      "dl",
+		Name:      "install",
 		Usage:     "Download and install a specific GO version",
-		ShortName: "dl",
-		Aliases:   []string{"gd", "dl", "install"},
+		ShortName: "install",
+		Aliases:   []string{"download", "dl", "install", "ins"},
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "version, v",
@@ -30,6 +34,9 @@ func newInstallGoSubcommand() cli.Command {
 			},
 		},
 		Action: func(c *cli.Context) error {
+			if os.Geteuid() != 0 {
+				return cli.NewExitError("Must run as root, use 'sudo toolbox go install --version=1.22.0'", 1)
+			}
 			osType := runtime.GOOS
 			if osType == "windows" {
 				return cli.NewExitError("Windows is not supported", 1)
@@ -40,11 +47,7 @@ func newInstallGoSubcommand() cli.Command {
 			}
 			installBase := c.String("install-dir")
 			if installBase == "" {
-				gopath := os.Getenv("GOPATH")
-				if gopath == "" {
-					gopath = filepath.Join(os.Getenv("HOME"), "go")
-				}
-				installBase = gopath
+				installBase = defaultInstallDir
 			}
 			destDir := filepath.Join(installBase, "go"+version)
 			if _, err := os.Stat(destDir); err == nil {

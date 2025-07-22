@@ -1,7 +1,7 @@
 package main
 
 import (
-	commands2 "github.com/cocowh/toolbox/core/commands"
+	commands2 "github.com/cocowh/toolbox/commands"
 	"github.com/urfave/cli"
 	"os"
 )
