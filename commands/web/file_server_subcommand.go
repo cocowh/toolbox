@@ -1,16 +1,15 @@
 package web
 
 import (
-	"github.com/cocowh/toolbox/core/server"
-	"github.com/urfave/cli"
+	"github.com/cocowh/toolbox/internal/server"
+	"github.com/urfave/cli/v2"
 )
 
-func newFileServerSubcommand() cli.Command {
-	return cli.Command{
-		Name:      "file_serve",
-		Usage:     "Serve files from a directory",
-		ShortName: "fs",
-		Aliases:   []string{"fs", "file_serve"},
+func newFileServerSubcommand() *cli.Command {
+	return &cli.Command{
+		Name:    "file_serve",
+		Usage:   "Serve files from a directory",
+		Aliases: []string{"fs"},
 		Flags: []cli.Flag{
 			&cli.IntFlag{
 				Name:  "port, p",

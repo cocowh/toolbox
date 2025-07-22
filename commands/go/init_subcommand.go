@@ -3,7 +3,8 @@ package _go
 import (
 	"bufio"
 	"fmt"
-	"github.com/urfave/cli"
+	"github.com/cocowh/toolbox/pkg/logger"
+	"github.com/urfave/cli/v2"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,12 +23,11 @@ export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 `
 )
 
-func newInitGoEnvSubcommand() cli.Command {
-	return cli.Command{
-		Name:      "init-go-env",
-		Usage:     "initialize go environment",
-		ShortName: "i",
-		Aliases:   []string{"init-go-env", "i"},
+func newInitGoEnvSubcommand() *cli.Command {
+	return &cli.Command{
+		Name:    "init-go-env",
+		Usage:   "initialize go environment",
+		Aliases: []string{"ige", "i"},
 		Action: func(c *cli.Context) error {
 			shell := os.Getenv("SHELL")
 			profileFile := ""
@@ -37,27 +37,27 @@ func newInitGoEnvSubcommand() cli.Command {
 			case strings.Contains(shell, "bash"):
 				profileFile = ".bashrc"
 			default:
-				return cli.NewExitError("unsupported shell: "+shell, 1)
+				return cli.Exit("unsupported shell: "+shell, 1)
 			}
 			home, err := os.UserHomeDir()
 			if err != nil {
-				return cli.NewExitError("failed to get current user: "+err.Error(), 1)
+				return cli.Exit("failed to get current user: "+err.Error(), 1)
 			}
 			fullPath := filepath.Join(home, profileFile)
 			if alreadyContainsInit(fullPath) {
-				fmt.Println("go environment already initialized in", fullPath)
+				logger.Info("go environment already initialized in %s", fullPath)
 				return nil
 			}
 			f, err := os.OpenFile(fullPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 			if err != nil {
-				return cli.NewExitError("failed to open file: "+err.Error(), 1)
+				return cli.Exit("failed to open file: "+err.Error(), 1)
 			}
 			defer f.Close()
 			if _, err := f.WriteString(fmt.Sprintf(goENVInitTextTemplate, defaultGoProxy, defaultGoPath, defaultGoRoot)); err != nil {
-				return cli.NewExitError("failed to write to profile: "+err.Error(), 1)
+				return cli.Exit("failed to write to profile: "+err.Error(), 1)
 			}
-			fmt.Println("✅ Go environment initialized in", fullPath)
-			fmt.Println("👉 Please run `source ~/" + profileFile + "` or restart your terminal to apply changes.")
+			logger.Info("Go environment initialized in %s", fullPath)
+			logger.Info("Please run `source ~/%s` or restart your terminal to apply changes.", profileFile)
 			return nil
 		},
 	}

@@ -1,15 +1,15 @@
 package _go
 
 import (
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
-func NewGoCommand() cli.Command {
-	cmd := cli.Command{
+func NewGoCommand() *cli.Command {
+	cmd := &cli.Command{
 		Name:  "go",
 		Usage: "go tool",
 	}
-	cmd.Subcommands = []cli.Command{
+	cmd.Subcommands = []*cli.Command{
 		newInitGoEnvSubcommand(),
 		newGoGtagCommand(),
 		newInstallGoSubcommand(),

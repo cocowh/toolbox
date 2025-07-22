@@ -3,11 +3,11 @@ package commands
 import (
 	gocmd "github.com/cocowh/toolbox/commands/go"
 	"github.com/cocowh/toolbox/commands/web"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var (
-	commands []cli.Command
+	commands []*cli.Command
 )
 
 func init() {
@@ -15,10 +15,10 @@ func init() {
 	RegistryCommand(web.NewWebCommand())
 }
 
-func GetAllCommands() []cli.Command {
+func GetAllCommands() []*cli.Command {
 	return commands
 }
 
-func RegistryCommand(cmd cli.Command) {
+func RegistryCommand(cmd *cli.Command) {
 	commands = append(commands, cmd)
 }

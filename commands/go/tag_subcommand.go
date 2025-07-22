@@ -3,19 +3,19 @@ package _go
 import (
 	"bufio"
 	"fmt"
-	"github.com/urfave/cli"
+	"github.com/cocowh/toolbox/pkg/logger"
+	"github.com/urfave/cli/v2"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
 )
 
-func newGoGtagCommand() cli.Command {
-	return cli.Command{
-		Name:      "tag",
-		Usage:     "generate go pseudo-version from current git commit",
-		ShortName: "gt",
-		Aliases:   []string{"gt", "tag", "gtag"},
+func newGoGtagCommand() *cli.Command {
+	return &cli.Command{
+		Name:    "tag",
+		Usage:   "generate go pseudo-version from current git commit",
+		Aliases: []string{"gt", "t", "gtag"},
 		Action: func(c *cli.Context) error {
 			commitHash, err := getGitCommit()
 			if err != nil {
@@ -30,8 +30,8 @@ func newGoGtagCommand() cli.Command {
 				return err
 			}
 			pseudoVersion := fmt.Sprintf("%s.0.0-%s-%s", majorVersion, commitTime, commitHash[:12])
-			fmt.Printf("Module: %s\n", modPath)
-			fmt.Println("Pseudo-version:", pseudoVersion)
+			logger.Info("Module: %s", modPath)
+			logger.Info("Pseudo-version: %s", pseudoVersion)
 			return nil
 		},
 	}

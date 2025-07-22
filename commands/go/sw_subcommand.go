@@ -2,45 +2,45 @@ package _go
 
 import (
 	"fmt"
-	"github.com/urfave/cli"
+	"github.com/cocowh/toolbox/pkg/logger"
+	"github.com/urfave/cli/v2"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 )
 
-func newSwitchGoSubcommand() cli.Command {
-	return cli.Command{
-		Name:      "sw",
-		Usage:     "switch the golang version(requires root permissions)",
-		ShortName: "sw",
-		Aliases:   []string{"sw", "chgo", "switch"},
+func newSwitchGoSubcommand() *cli.Command {
+	return &cli.Command{
+		Name:    "sw",
+		Usage:   "switch the golang version(requires root permissions)",
+		Aliases: []string{"chgo", "switch", "sg", "cg"},
 		Flags: []cli.Flag{
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "version, v",
 				Usage: "Go version to switch to (e.g., 1.22.0)",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "install-dir, d",
 				Usage: fmt.Sprintf("Base directory where Go versions are installed (default: %s)", defaultInstallDir),
 			},
 		},
 		Action: func(c *cli.Context) error {
 			if os.Geteuid() != 0 {
-				return cli.NewExitError("Must run as root, use 'sudo toolbox go switch --version=1.22.0'", 1)
+				return cli.Exit("Must run as root, use 'sudo toolbox go switch --version=1.22.0'", 1)
 			}
 			version := c.String("version")
 			if version == "" {
-				return cli.NewExitError("Please specify --version (e.g. --version 1.22.0)", 1)
+				return cli.Exit("Please specify --version (e.g. --version 1.22.0)", 1)
 			}
 
 			currentVersion, err := getCurrentGoVersion()
 			if err != nil {
-				return cli.NewExitError("Failed to detect current Go version: "+err.Error(), 1)
+				return cli.Exit("Failed to detect current Go version: "+err.Error(), 1)
 			}
 
 			if currentVersion == version {
-				fmt.Println("Current Go version is already", version)
+				logger.Info("Current Go version is already %s" + version)
 				return nil
 			}
 			installBase := c.String("install-dir")
@@ -51,26 +51,25 @@ func newSwitchGoSubcommand() cli.Command {
 
 			// Check if the target Go directory exists
 			if _, err := os.Stat(targetDir); os.IsNotExist(err) {
-				return cli.NewExitError("Go version "+version+" not found in "+targetDir, 1)
+				return cli.Exit("Go version "+version+" not found in "+targetDir, 1)
 			}
 
 			// Replace /usr/local/go with symlink
-			fmt.Println("Switching Go version to", version, "from", targetDir)
+			logger.Info("Switching Go version to %s from %s", version, targetDir)
 			fi, err := os.Lstat(defaultGoRoot)
 			if err == nil {
 				if fi.Mode()&os.ModeSymlink == 0 {
-					return cli.NewExitError("/usr/local/go is detected and not a soft link. To prevent error deletion, please delete it manually or try again after backup.", 1)
+					return cli.Exit("/usr/local/go is detected and not a soft link. To prevent error deletion, please delete it manually or try again after backup.", 1)
 				}
 				if err := os.Remove(defaultGoRoot); err != nil {
-					return cli.NewExitError("Failed to remove old soft link `/usr/local/go` : "+err.Error(), 1)
+					return cli.Exit("Failed to remove old soft link `/usr/local/go` : "+err.Error(), 1)
 				}
 			}
 
 			if err := os.Symlink(targetDir, defaultGoRoot); err != nil {
-				return cli.NewExitError("Failed to create symlink: "+err.Error(), 1)
+				return cli.Exit("Failed to create symlink: "+err.Error(), 1)
 			}
-
-			fmt.Println("Go version switched to", version, "successfully.")
+			logger.Info("Go version switched to %s successfully", version)
 			return nil
 		},
 	}

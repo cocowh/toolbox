@@ -4,12 +4,14 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"fmt"
-	"github.com/urfave/cli"
+	"github.com/cocowh/toolbox/pkg/logger"
+	"github.com/urfave/cli/v2"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strings"
 )
 
@@ -18,33 +20,32 @@ const (
 	defaultInstallDir   = "/usr/local/"
 )
 
-func newInstallGoSubcommand() cli.Command {
-	return cli.Command{
-		Name:      "install",
-		Usage:     "Download and install a specific GO version(requires root permissions)",
-		ShortName: "install",
-		Aliases:   []string{"download", "dl", "install", "ins"},
+func newInstallGoSubcommand() *cli.Command {
+	return &cli.Command{
+		Name:    "install",
+		Usage:   "Download and install a specific GO version(requires root permissions)",
+		Aliases: []string{"download", "dl", "ins"},
 		Flags: []cli.Flag{
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "version, v",
 				Usage: "Go version to download(e.g., 1.22.0)",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "install-dir, d",
 				Usage: fmt.Sprintf("Directory to install Go (default: %s)", defaultInstallDir),
 			},
 		},
 		Action: func(c *cli.Context) error {
 			if os.Geteuid() != 0 {
-				return cli.NewExitError("Must run as root, use 'sudo toolbox go install --version=1.22.0'", 1)
+				return cli.Exit("Must run as root, use 'sudo toolbox go install --version=1.22.0'", 1)
 			}
 			osType := runtime.GOOS
 			if osType == "windows" {
-				return cli.NewExitError("Windows is not supported", 1)
+				return cli.Exit("Windows is not supported", 1)
 			}
 			version := c.String("version")
 			if version == "" {
-				return cli.NewExitError("Please specify --version (e.g. --version 1.22.0)", 1)
+				return cli.Exit("Please specify --version (e.g. --version 1.22.0)", 1)
 			}
 			installBase := c.String("install-dir")
 			if installBase == "" {
@@ -52,41 +53,40 @@ func newInstallGoSubcommand() cli.Command {
 			}
 			destDir := filepath.Join(installBase, "go"+version)
 			if _, err := os.Stat(destDir); err == nil {
-				fmt.Println("Go version", version, "already installed at", destDir)
+				logger.Info("Go version %s already installed at %s", version, destDir)
 				return nil
 			}
 			arch := runtime.GOARCH
 			tarball := fmt.Sprintf("go%s.%s-%s.tar.gz", version, osType, arch)
 			url := fmt.Sprintf(downloadUrlTemplate, tarball)
 
-			fmt.Println("Downloading:", url)
+			logger.Info("Downloading:", url)
 			resp, err := http.Get(url)
 			if err != nil {
-				return fmt.Errorf("failed to download Go tarball: %w", err)
+				return cli.Exit("failed to download Go tarball: "+err.Error(), 1)
 			}
 			defer resp.Body.Close()
 			if resp.StatusCode != http.StatusOK {
-				return fmt.Errorf("failed to download Go tarball: %s", resp.Status)
+				return cli.Exit("failed to download Go tarball: "+resp.Status, 1)
 			}
 
 			tmpFile := filepath.Join(os.TempDir(), tarball)
 			out, err := os.Create(tmpFile)
 			if err != nil {
-				return fmt.Errorf("failed to create temp file: %w", err)
+				return cli.Exit("failed to create temp file: "+err.Error(), 1)
 			}
 			_, err = io.Copy(out, resp.Body)
 			out.Close()
 			if err != nil {
-				return fmt.Errorf("failed to save tarball: %w", err)
+				return cli.Exit("failed to save tarball: "+err.Error(), 1)
 			}
 
-			fmt.Println("Extracting to:", destDir)
+			logger.Info("Extracting to: %s", destDir)
 			err = extractTarGz(tmpFile, installBase, version)
 			if err != nil {
-				return fmt.Errorf("extraction failed: %w", err)
+				return cli.Exit("extraction failed: "+err.Error(), 1)
 			}
-
-			fmt.Println("Go", version, "downloaded and extracted to", destDir)
+			logger.Info("Go %s downloaded and extracted to %s", version, destDir)
 			return nil
 		},
 	}
@@ -95,7 +95,7 @@ func newInstallGoSubcommand() cli.Command {
 func extractTarGz(tarPath, installBase, version string) error {
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("Extracting tar.gz failed:", r)
+			logger.Fatal("Extracting tar.gz failed: %s", string(debug.Stack()))
 		}
 	}()
 	f, err := os.Open(tarPath)
