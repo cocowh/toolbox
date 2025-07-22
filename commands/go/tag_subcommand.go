@@ -2,9 +2,10 @@ package _go
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"github.com/cocowh/toolbox/pkg/logger"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"os"
 	"os/exec"
 	"strings"
@@ -16,7 +17,7 @@ func newGoGtagCommand() *cli.Command {
 		Name:    "tag",
 		Usage:   "generate go pseudo-version from current git commit",
 		Aliases: []string{"gt", "t", "gtag"},
-		Action: func(c *cli.Context) error {
+		Action: func(c context.Context, command *cli.Command) error {
 			commitHash, err := getGitCommit()
 			if err != nil {
 				return err

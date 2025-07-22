@@ -1,9 +1,10 @@
 package _go
 
 import (
+	"context"
 	"fmt"
 	"github.com/cocowh/toolbox/pkg/logger"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -25,7 +26,7 @@ func newSwitchGoSubcommand() *cli.Command {
 				Usage: fmt.Sprintf("Base directory where Go versions are installed (default: %s)", defaultInstallDir),
 			},
 		},
-		Action: func(c *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			if os.Geteuid() != 0 {
 				return cli.Exit("Must run as root, use 'sudo toolbox go switch --version=1.22.0'", 1)
 			}

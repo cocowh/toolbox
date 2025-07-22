@@ -3,7 +3,7 @@ package commands
 import (
 	gocmd "github.com/cocowh/toolbox/commands/go"
 	"github.com/cocowh/toolbox/commands/web"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var (

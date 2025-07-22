@@ -1,8 +1,9 @@
 package web
 
 import (
+	"context"
 	"github.com/cocowh/toolbox/internal/server"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func newFileServerSubcommand() *cli.Command {
@@ -21,7 +22,7 @@ func newFileServerSubcommand() *cli.Command {
 				Usage: "Directory to serve files from",
 			},
 		},
-		Action: func(c *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			return server.StartFileServer(c)
 		},
 	}

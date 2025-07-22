@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func NewWebCommand() *cli.Command {
@@ -9,7 +9,7 @@ func NewWebCommand() *cli.Command {
 		Name:  "web",
 		Usage: "web tool",
 	}
-	cmd.Subcommands = []*cli.Command{
+	cmd.Commands = []*cli.Command{
 		newFileServerSubcommand(),
 	}
 	return cmd

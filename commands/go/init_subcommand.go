@@ -2,9 +2,10 @@ package _go
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"github.com/cocowh/toolbox/pkg/logger"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,7 +29,7 @@ func newInitGoEnvSubcommand() *cli.Command {
 		Name:    "init-go-env",
 		Usage:   "initialize go environment",
 		Aliases: []string{"ige", "i"},
-		Action: func(c *cli.Context) error {
+		Action: func(ctx context.Context, command *cli.Command) error {
 			shell := os.Getenv("SHELL")
 			profileFile := ""
 			switch {

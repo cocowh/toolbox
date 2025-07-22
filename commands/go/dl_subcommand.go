@@ -3,9 +3,10 @@ package _go
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
 	"fmt"
 	"github.com/cocowh/toolbox/pkg/logger"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"io"
 	"net/http"
 	"os"
@@ -35,7 +36,7 @@ func newInstallGoSubcommand() *cli.Command {
 				Usage: fmt.Sprintf("Directory to install Go (default: %s)", defaultInstallDir),
 			},
 		},
-		Action: func(c *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			if os.Geteuid() != 0 {
 				return cli.Exit("Must run as root, use 'sudo toolbox go install --version=1.22.0'", 1)
 			}

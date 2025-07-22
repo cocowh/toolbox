@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/cocowh/toolbox/pkg/logger"
 	"github.com/cocowh/toolbox/pkg/netutils"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
-func StartFileServer(c *cli.Context) error {
+func StartFileServer(c *cli.Command) error {
 	port := c.Int("port")
 	dir := c.String("dir")
 	if dir == "" {

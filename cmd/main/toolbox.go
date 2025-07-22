@@ -1,10 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	commands2 "github.com/cocowh/toolbox/commands"
 	"github.com/cocowh/toolbox/pkg/logger"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"os"
 )
 
@@ -13,15 +14,15 @@ var (
 )
 
 func main() {
-	app := newToolboxApp()
-	if err := app.Run(os.Args); err != nil {
+	cmd := newToolboxCommand()
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		logger.Error("Error: %v", err)
 		os.Exit(1)
 	}
 }
 
-func newToolboxApp() *cli.App {
-	app := &cli.App{
+func newToolboxCommand() *cli.Command {
+	app := &cli.Command{
 		Name:    "toolbox",
 		Usage:   "Toolbox is a command line tool that provides a set of tools for developers.",
 		Version: Version,
@@ -37,16 +38,16 @@ func newToolboxApp() *cli.App {
 				Value: true,
 			},
 		},
-		Before: func(c *cli.Context) error {
-			logLevel := c.Int("log-level")
+		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
+			logLevel := command.Int("log-level")
 			logger.SetLevel(logger.LogLevel(logLevel))
-			if c.Bool("log-hide-tag") {
+			if command.Bool("log-hide-tag") {
 				logger.EnableHideTag()
 			}
-			return nil
+			return ctx, nil
 		},
 		Commands: commands2.GetAllCommands(),
-		ExitErrHandler: func(c *cli.Context, err error) {
+		ExitErrHandler: func(ctx context.Context, command *cli.Command, err error) {
 			if err != nil {
 				logger.Error(err.Error())
 			}

@@ -1,7 +1,7 @@
 package _go
 
 import (
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func NewGoCommand() *cli.Command {
@@ -9,7 +9,7 @@ func NewGoCommand() *cli.Command {
 		Name:  "go",
 		Usage: "go tool",
 	}
-	cmd.Subcommands = []*cli.Command{
+	cmd.Commands = []*cli.Command{
 		newInitGoEnvSubcommand(),
 		newGoGtagCommand(),
 		newInstallGoSubcommand(),
