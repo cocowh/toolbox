@@ -12,7 +12,7 @@ import (
 func newSwitchGoSubcommand() cli.Command {
 	return cli.Command{
 		Name:      "sw",
-		Usage:     "switch the golang version",
+		Usage:     "switch the golang version(requires root permissions)",
 		ShortName: "sw",
 		Aliases:   []string{"sw", "chgo", "switch"},
 		Flags: []cli.Flag{
@@ -22,7 +22,7 @@ func newSwitchGoSubcommand() cli.Command {
 			},
 			cli.StringFlag{
 				Name:  "install-dir, d",
-				Usage: "Base directory where Go versions are installed (default: $GOPATH)",
+				Usage: fmt.Sprintf("Base directory where Go versions are installed (default: %s)", defaultInstallDir),
 			},
 		},
 		Action: func(c *cli.Context) error {

@@ -20,7 +20,7 @@ const (
 func newInstallGoSubcommand() cli.Command {
 	return cli.Command{
 		Name:      "install",
-		Usage:     "Download and install a specific GO version",
+		Usage:     "Download and install a specific GO version(requires root permissions)",
 		ShortName: "install",
 		Aliases:   []string{"download", "dl", "install", "ins"},
 		Flags: []cli.Flag{
@@ -30,7 +30,7 @@ func newInstallGoSubcommand() cli.Command {
 			},
 			cli.StringFlag{
 				Name:  "install-dir, d",
-				Usage: "Directory to install Go (default: $GOPATH)",
+				Usage: fmt.Sprintf("Directory to install Go (default: %s)", defaultInstallDir),
 			},
 		},
 		Action: func(c *cli.Context) error {
