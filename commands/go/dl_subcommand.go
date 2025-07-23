@@ -28,12 +28,15 @@ func newInstallGoSubcommand() *cli.Command {
 		Aliases: []string{"download", "dl", "ins"},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "version, v",
-				Usage: "Go version to download(e.g., 1.22.0)",
+				Name:     "version",
+				Usage:    "Go version to download(e.g., 1.22.0)",
+				Required: true,
+				Aliases:  []string{"v"},
 			},
 			&cli.StringFlag{
-				Name:  "install-dir, d",
-				Usage: fmt.Sprintf("Directory to install Go (default: %s)", defaultInstallDir),
+				Name:    "install-dir, d",
+				Usage:   fmt.Sprintf("Directory to install Go (default: %s)", defaultInstallDir),
+				Aliases: []string{"d"},
 			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {

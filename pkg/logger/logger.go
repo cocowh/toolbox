@@ -18,7 +18,7 @@ var (
 	currentLevel LogLevel = InfoLevel
 	silent       bool     = false
 	showTime     bool     = false
-	hideTag      bool     = false
+	showTag      bool     = false
 )
 
 type LogLevel int
@@ -80,8 +80,8 @@ func EnableTimestamp() {
 	showTime = true
 }
 
-func EnableHideTag() {
-	hideTag = true
+func EnableTag() {
+	showTag = true
 }
 
 // Debug prints debug logs if enabled.
@@ -115,7 +115,7 @@ func log(level LogLevel, tag, format string, a ...interface{}) {
 	}
 	var tagInfo string
 	var timeInfo string
-	if !hideTag {
+	if showTag {
 		tagInfo = fmt.Sprintf("[%s]", tag)
 	}
 	if showTime {

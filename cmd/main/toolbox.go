@@ -16,7 +16,7 @@ var (
 func main() {
 	cmd := newToolboxCommand()
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
-		logger.Error("Error: %v", err)
+		logger.Fatal(err.Error())
 		os.Exit(1)
 	}
 }
@@ -28,22 +28,26 @@ func newToolboxCommand() *cli.Command {
 		Version: Version,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "log-level, ll",
-				Value: logger.DebugLevel.ToStringValue(),
-				Usage: fmt.Sprintf("set log level: %s", logger.GetAllLogLevelsString()),
+				Name:    "log-level",
+				Value:   logger.InfoLevel.ToStringValue(),
+				Usage:   fmt.Sprintf("set log level: %s", logger.GetAllLogLevelsString()),
+				Aliases: []string{"ll"},
 			},
 			&cli.BoolFlag{
-				Name:  "log-hide-tag, lht",
-				Usage: "hide log tag",
-				Value: true,
+				Name:    "log-show-tag",
+				Usage:   "show log tag",
+				Value:   false,
+				Aliases: []string{"stag"},
+			},
+			&cli.BoolFlag{
+				Name:    "log-show-time",
+				Usage:   "show log time",
+				Value:   false,
+				Aliases: []string{"stime"},
 			},
 		},
 		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-			logLevel := command.Int("log-level")
-			logger.SetLevel(logger.LogLevel(logLevel))
-			if command.Bool("log-hide-tag") {
-				logger.EnableHideTag()
-			}
+			initLogger(command)
 			return ctx, nil
 		},
 		Commands: commands2.GetAllCommands(),
@@ -55,4 +59,15 @@ func newToolboxCommand() *cli.Command {
 		},
 	}
 	return app
+}
+
+func initLogger(command *cli.Command) {
+	logLevel := command.Int("log-level")
+	logger.SetLevel(logger.LogLevel(logLevel))
+	if command.Bool("log-show-tag") {
+		logger.EnableTag()
+	}
+	if command.Bool("log-show-time") {
+		logger.EnableTimestamp()
+	}
 }
