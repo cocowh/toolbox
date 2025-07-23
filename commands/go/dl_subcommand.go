@@ -61,7 +61,7 @@ func newInstallGoSubcommand() *cli.Command {
 			tarball := fmt.Sprintf("go%s.%s-%s.tar.gz", version, osType, arch)
 			url := fmt.Sprintf(downloadUrlTemplate, tarball)
 
-			logger.Info("Downloading:", url)
+			logger.Info("Downloading: %s", url)
 			resp, err := http.Get(url)
 			if err != nil {
 				return cli.Exit("failed to download Go tarball: "+err.Error(), 1)
