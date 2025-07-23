@@ -34,7 +34,7 @@ func newInstallGoSubcommand() *cli.Command {
 				Aliases:  []string{"v"},
 			},
 			&cli.StringFlag{
-				Name:    "install-dir, d",
+				Name:    "dir",
 				Usage:   fmt.Sprintf("Directory to install Go (default: %s)", defaultInstallDir),
 				Aliases: []string{"d"},
 			},

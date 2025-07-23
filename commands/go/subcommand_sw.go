@@ -24,7 +24,7 @@ func newSwitchGoSubcommand() *cli.Command {
 				Aliases:  []string{"v"},
 			},
 			&cli.StringFlag{
-				Name:    "install-dir",
+				Name:    "dir",
 				Usage:   fmt.Sprintf("Base directory where Go versions are installed (default: %s)", defaultInstallDir),
 				Aliases: []string{"d"},
 			},

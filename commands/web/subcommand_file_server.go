@@ -13,13 +13,15 @@ func newFileServerSubcommand() *cli.Command {
 		Aliases: []string{"fs"},
 		Flags: []cli.Flag{
 			&cli.IntFlag{
-				Name:  "port, p",
-				Value: 8080,
-				Usage: "Listening port",
+				Name:    "port",
+				Value:   8080,
+				Aliases: []string{"p"},
+				Usage:   "Listening port",
 			},
 			&cli.StringFlag{
-				Name:  "dir, d",
-				Usage: "Directory to serve files from",
+				Name:    "dir",
+				Aliases: []string{"d"},
+				Usage:   "Directory to serve files from",
 			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {

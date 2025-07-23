@@ -14,6 +14,7 @@ func NewGoCommand() *cli.Command {
 		newGoGtagCommand(),
 		newInstallGoSubcommand(),
 		newSwitchGoSubcommand(),
+		newListVersionCommand(),
 	}
 	return cmd
 }
